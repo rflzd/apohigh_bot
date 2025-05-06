@@ -7,7 +7,7 @@ import requests
 from timezonefinder import TimezoneFinder
 from telegram import Update
 from telegram.ext import CallbackContext
-from services.highlightly_db import init_db, SessionLocal
+from highlightly_db import init_db, SessionLocal
 
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
