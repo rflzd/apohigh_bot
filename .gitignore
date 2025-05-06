@@ -1,0 +1,18 @@
+.env
+.vscode/
+*.sqlite3
+
+
+# Virtual mühitlər
+myenv/
+venv/
+
+# Python bytecode faylları
+__pycache__/
+*.pyc
+*.pyo
+
+# Digər müvəqqəti fayllar
+*.log
+*.sqlite
+*.db
