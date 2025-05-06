@@ -136,3 +136,16 @@ def update_subscription_status(user_id, is_active, payment_receipt):
         user.payment_receipt = payment_receipt
         session.commit()
     session.close()
+
+def activate_subscription(user_id):
+    """
+    İstifadəçinin abunəliyini aktivləşdirir.
+    
+    :param user_id: İstifadəçi ID-si
+    :return: Heç bir şey qaytarmır
+    """
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE subscriptions SET is_active=1 WHERE user_id=?", (user_id,))
+    conn.commit()
+    conn.close()
