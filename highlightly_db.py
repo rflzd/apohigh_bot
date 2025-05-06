@@ -1,14 +1,11 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from config import DATABASE_URL  # MySQL bağlantısı .env-dən alınır
+from config import DATABASE_URL  # Database URL .env-dən alınır
 import sqlite3
 
-# Database bağlantısını qururuq
-engine = create_engine(DATABASE_URL, pool_size=10, max_overflow=20)
-
-# SessionLocal yaradılır
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# SQLAlchemy üçün Base təyin edilir
+Base = declarative_base()
 
 # Liqa cədvəli
 class League(Base):
@@ -59,7 +56,7 @@ class Admin(Base):
 
 # Verilənlər bazası bağlantısı
 def get_session():
-    engine = create_engine(DATABASE_URL)  # MySQL bağlantısı
+    engine = create_engine(DATABASE_URL)
     Session = sessionmaker(bind=engine)
     return Session()
 
