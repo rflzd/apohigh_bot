@@ -4,7 +4,11 @@ from sqlalchemy.orm import sessionmaker, relationship
 from config import DATABASE_URL  # MySQL bağlantısı .env-dən alınır
 import sqlite3
 
-Base = declarative_base()
+# Database bağlantısını qururuq
+engine = create_engine(DATABASE_URL, pool_size=10, max_overflow=20)
+
+# SessionLocal yaradılır
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Liqa cədvəli
 class League(Base):
