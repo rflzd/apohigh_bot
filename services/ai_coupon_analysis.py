@@ -2,7 +2,7 @@ import numpy as np
 import skfuzzy as fuzz
 from random import randint
 from services.notification_service import send_notification
-from services.highlightly import get_matches, get_odds_data, get_match_statistics  # Yeni funksiyalar əlavə edirik
+from services.highlightly import get_matches, get_odds, get_match_statistics  # Düzəliş: get_odds əlavə edildi
 from highlightly_db import get_subscription_status  # Abunəlik statusunu yoxlamaq
 
 # Fuzzy logic ilə kupon analizi
@@ -11,12 +11,12 @@ def fuzzy_coupon_analysis(team1_form, team2_form):
     Komanda formalarına əsaslanan qeyri-səlis analiz.
     
     :param team1_form: Komanda 1-in forması (0-100)
-    :param team2_form: Komanda 2-nin forması (0-100)
+    :param team2_form: Komanda 2-in forması (0-100)
     :return: Hər komandanın qalib gəlmə ehtimalı
     """
     x = np.arange(0, 101, 1)  # Formanın gücü 0-100 arasında
     team1_fuzzy = fuzz.trimf(x, [0, 50, 100])  # Komanda 1-in qeyri-səlis funksiyası
-    team2_fuzzy = fuzz.trimf(x, [0, 50, 100])  # Komanda 2-nin qeyri-səlis funksiyası
+    team2_fuzzy = fuzz.trimf(x, [0, 50, 100])  # Komanda 2-in qeyri-səlis funksiyası
     
     # Komanda 1-in qalib gəlmə ehtimalı
     team1_prob = fuzz.interp_membership(x, team1_fuzzy, team1_form)
@@ -30,7 +30,7 @@ def fuzzy_coupon_analysis(team1_form, team2_form):
 
 
 # AI analizi funksiyası
-def ai_analysis(user_id, match_id):
+async def ai_analysis(user_id, match_id):
     """
     AI analizi, komandaların gücünü və oyundakı üstünlük ehtimallarını qiymətləndirir.
     
@@ -44,7 +44,7 @@ def ai_analysis(user_id, match_id):
 
     # API-dən matç məlumatlarını alırıq
     match_data = get_matches()  # Bu günün matçlarını çəkirik
-    odds_data = get_odds_data(match_id)  # Əmsalları çəkirik
+    odds_data = await get_odds(match_id)  # Düzəliş: Əmsalları almaq üçün get_odds funksiyası istifadə edilir
 
     # Komanda 1 və Komanda 2-nin hücum gücü
     team1_attack = match_data['homeTeam']['attack']
@@ -71,7 +71,7 @@ def manipulate_odds(odds_data, team1_form, team2_form):
     
     :param odds_data: Əmsalların orijinal məlumatları
     :param team1_form: Komanda 1-in forması
-    :param team2_form: Komanda 2-nin forması
+    :param team2_form: Komanda 2-in forması
     :return: Manipulyasiya edilmiş əmsallar
     """
     # Fuzzy logic tətbiq edirik
@@ -91,14 +91,14 @@ def manipulate_odds(odds_data, team1_form, team2_form):
 
 
 # Real-time əmsalları almaq və manipulyasiya etmək
-def get_odds_for_match(match_id):
+async def get_odds_for_match(match_id):
     """
     Match üçün real-time əmsalları alır.
     
     :param match_id: Matç ID
     :return: Əmsallar (qələbə, heç-heçə və s.)
     """
-    odds_data = get_odds_data(match_id)  # highlightly.py-dan əmsalları alırıq
+    odds_data = await get_odds(match_id)  # Düzəliş: Əmsalları almaq üçün get_odds funksiyası istifadə edilir
     return odds_data
 
 
@@ -109,7 +109,7 @@ def fuzzy_manipulate_odds(odds_data, team1_form, team2_form):
     
     :param odds_data: Əmsalların orijinal məlumatları
     :param team1_form: Komanda 1-in forması
-    :param team2_form: Komanda 2-nin forması
+    :param team2_form: Komanda 2-in forması
     :return: Manipulyasiya edilmiş əmsallar
     """
     manipulated_odds = manipulate_odds(odds_data, team1_form, team2_form)
