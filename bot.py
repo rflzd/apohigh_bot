@@ -1,12 +1,13 @@
-# bot.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from telegram.ext import (
+    Application, CommandHandler, CallbackQueryHandler, ContextTypes
+)
 from services.notification_service import send_notification
 from services.subscription_service import check_subscription_status
 from handlers.ai_coupon_analysis_handler import handle_ai_coupon_analysis  # Handler faylından import
 
 # /start komandasını idarə edən funksiya
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     İstifadəçi /start komandasını göndərdikdə baş verən hadisə.
     
@@ -39,10 +40,10 @@ def start(update: Update, context: CallbackContext):
         ]
     
     reply_markup = InlineKeyboardMarkup(buttons)
-    update.message.reply_text(menu_text, reply_markup=reply_markup)
+    await update.message.reply_text(menu_text, reply_markup=reply_markup)
 
 # Callback query-lərini idarə edən funksiya
-def handle_callback(update: Update, context: CallbackContext):
+async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     İstifadəçidən gələn callback məlumatlarını idarə edir.
     
@@ -54,42 +55,40 @@ def handle_callback(update: Update, context: CallbackContext):
     user_id = query.from_user.id
 
     if query.data == 'live_games':
-        send_notification(user_id, "📺 Canlı oyunlar siyahısı:")
+        await send_notification(user_id, "📺 Canlı oyunlar siyahısı:")
         live_games = "Canlı oyunların siyahısı burada göstəriləcək."
-        send_notification(user_id, live_games)
+        await send_notification(user_id, live_games)
     elif query.data == 'today_games':
-        send_notification(user_id, "📅 Bugünkü oyunlar:")
+        await send_notification(user_id, "📅 Bugünkü oyunlar:")
         today_games = "Bugünkü oyunların siyahısı burada göstəriləcək."
-        send_notification(user_id, today_games)
+        await send_notification(user_id, today_games)
     elif query.data == 'search_team':
-        send_notification(user_id, "🔍 Komanda Axtar: Komanda adını yazın.")
+        await send_notification(user_id, "🔍 Komanda Axtar: Komanda adını yazın.")
     elif query.data == 'favorites':
-        send_notification(user_id, "📝 Sevimlilərim:")
+        await send_notification(user_id, "📝 Sevimlilərim:")
     elif query.data == 'ai_analysis':
         # AI analizi üçün handler-i çağırırıq
-        handle_ai_coupon_analysis(update, context)
+        await handle_ai_coupon_analysis(update, context)
     elif query.data == 'coupon_analysis':
         # Kupon analizi üçün handler-i çağırırıq
-        handle_ai_coupon_analysis(update, context)
+        await handle_ai_coupon_analysis(update, context)
     elif query.data == 'subscribe':
-        send_notification(user_id, "✅ Abunəliyiniz aktivləşdirildi!")
+        await send_notification(user_id, "✅ Abunəliyiniz aktivləşdirildi!")
     elif query.data == 'settings':
-        send_notification(user_id, "⚙️ Ayarlar: Burada parametrlərinizi dəyişə bilərsiniz.")
+        await send_notification(user_id, "⚙️ Ayarlar: Burada parametrlərinizi dəyişə bilərsiniz.")
 
 # Botu başladan funksiya
 def main():
     """
     Telegram botunu başladan əsas funksiya.
     """
-    updater = Updater(token="YOUR_BOT_API_KEY", use_context=True)
-    dispatcher = updater.dispatcher
+    application = Application.builder().token("YOUR_BOT_API_KEY").build()
 
     # Əsas handlerləri əlavə edirik
-    dispatcher.add_handler(CommandHandler('start', start))  # /start komandasını idarə edir
-    dispatcher.add_handler(CallbackQueryHandler(handle_callback))  # Callback query-ləri idarə edir
+    application.add_handler(CommandHandler('start', start))  # /start komandasını idarə edir
+    application.add_handler(CallbackQueryHandler(handle_callback))  # Callback query-ləri idarə edir
 
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
