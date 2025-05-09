@@ -7,6 +7,10 @@ import sqlite3
 # SQLAlchemy üçün Base təyin edilir
 Base = declarative_base()
 
+# SQLAlchemy session üçün SessionLocal obyektini təyin edirik
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
+
 # Liqa cədvəli
 class League(Base):
     __tablename__ = 'leagues'
@@ -56,13 +60,10 @@ class Admin(Base):
 
 # Verilənlər bazası bağlantısı
 def get_session():
-    engine = create_engine(DATABASE_URL)
-    Session = sessionmaker(bind=engine)
-    return Session()
+    return SessionLocal()
 
 # Verilənlər bazasında cədvəl yaratmaq
 def init_db():
-    engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
 
 # Verilənlər bazasına yeni admin əlavə etmək
