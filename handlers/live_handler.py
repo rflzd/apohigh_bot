@@ -1,13 +1,16 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from api_requests import get_matches  # API ilə məlumatları gətirən funksiya
+from services.highlightly import get_live_matches  # Canlı oyunları gətirən funksiyanı idxal edirik
 
 # /live komandasını idarə edən funksiya
 async def live(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Canlı oyunları idarə edən funksiya.
+    """
     await update.message.reply_text("⚽ Canlı oyunlar yüklənir, zəhmət olmasa gözləyin...")
 
-    # API-dən canlı oyun məlumatlarını alırıq
-    matches = get_matches()
+    # Canlı oyunları məlumat bazasından və ya API-dən alırıq
+    matches = get_live_matches()
 
     # Məlumat yoxlaması
     if not matches:
@@ -17,13 +20,14 @@ async def live(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Oyunları formatlaşdırırıq və inline düymələr əlavə edirik
     message = "⚽ Hazırda davam edən canlı oyunlar:\n\n"
     keyboard = []
+
     for match in matches:
-        league_name = match["league"]["name"]
-        home_team = match["homeTeam"]["name"]
-        away_team = match["awayTeam"]["name"]
-        score = match["state"]["score"]["current"]
-        status = match["state"]["description"]
-        match_id = match["id"]  # Hər oyun üçün unikal ID
+        league_name = match.get("league_name", "Naməlum Liqa")
+        home_team = match.get("home_team", "Naməlum Komanda")
+        away_team = match.get("away_team", "Naməlum Komanda")
+        score = match.get("score", "Naməlum")
+        status = match.get("status", "Bilinmir")
+        match_id = match.get("id", "0")  # Hər oyun üçün unikal ID
 
         # Mesaj formatı
         message += f"🏆 Liqa: {league_name}\n"
