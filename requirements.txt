@@ -5,47 +5,39 @@ python-telegram-bot==20.0
 requests==2.26.0
 
 # Fuzzy təhlil üçün
-scikit-fuzzy==0.4.0
+scikit-fuzzy==0.4.2  # Yenilənmiş versiya
 
-# Asinxron HTTP sorğuları göndərmək üçün
-aiohttp==3.8.1  # Asinxron HTTP sorğuları üçün
-
-# Zaman məlumatı üçün
-pytz==2021.1
-
-# Zaman zonalarını tapmaq üçün
-timezonefinder==4.4.0
+# Zaman məlumatı və zaman zonalarını tapmaq üçün
+pytz==2023.3
+timezonefinder==5.2.0  # Yenilənmiş versiya
 
 # Elmi hesablama və alqoritmlər üçün
-numpy==1.21.2
-scipy==1.7.3
-pandas==1.3.3  # Verilənlər analitikası üçün
+numpy>=1.22  # Python 3.11 üçün uyğun versiya
+scipy>=1.8.0  # Yenilənmiş versiya
+pandas>=1.4.0  # Python 3.11 dəstəyi üçün uyğun versiya
 
 # SQLAlchemy ORM və MySQL bağlantısı üçün
-sqlalchemy==1.4.31
-psycopg2-binary==2.9.3
-mysql-connector-python==8.0.27  # MySQL ilə əlaqə üçün
-PyMySQL==1.0.2  # Alternativ MySQL bağlantısı üçün
+sqlalchemy>=1.4.41  # Python 3.11 dəstəyi üçün
+psycopg2-binary>=2.9.6  # Yenilənmiş versiya
+mysql-connector-python>=8.0.33  # MySQL əlaqəsi üçün daha yeni versiya
+PyMySQL>=1.0.3  # Alternativ MySQL bağlantısı üçün yenilənmiş versiya
 
 # Asinxron HTTP sorğuları göndərmək üçün
-aiohttp==3.8.1  # Asinxron HTTP sorğuları üçün
+aiohttp>=3.8.4  # Daha yeni versiya
 
 # Cron tapşırıqları və zaman cədvəli üçün
-apscheduler==3.8.1
+apscheduler>=3.10.1  # Daha yeni versiya
 
 # .env faylından mühit dəyişənlərini oxumaq üçün
-python-dotenv==0.19.2
+python-dotenv>=1.0.0  # Daha yeni versiya
 
 # Kod keyfiyyəti və formatlaşdırma üçün
-black==22.3.0
-flake8==5.0.4
+black>=23.3.0
+flake8>=6.0.0
 
 # Loglama üçün
-loguru==0.6.0
+loguru>=0.7.0
 
 # Testlər üçün
-pytest==7.1.2
-pytest-asyncio==0.18.3
-
-# Geri çağırmalar üçün
-apscheduler==3.8.1
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
