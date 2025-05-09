@@ -1,10 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application, CommandHandler, CallbackQueryHandler, ContextTypes
-)
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from services.notification_service import send_notification
 from services.subscription_service import check_subscription_status
 from handlers.ai_coupon_analysis_handler import handle_ai_coupon_analysis  # Handler faylından import
+from config import BOT_TOKEN  # Token config.py-dən alınır
 
 # /start komandasını idarə edən funksiya
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -82,7 +81,7 @@ def main():
     """
     Telegram botunu başladan əsas funksiya.
     """
-    application = Application.builder().token("YOUR_BOT_API_KEY").build()
+    application = Application.builder().token(BOT_TOKEN).build()  # Token config.py-dən alınır
 
     # Əsas handlerləri əlavə edirik
     application.add_handler(CommandHandler('start', start))  # /start komandasını idarə edir
