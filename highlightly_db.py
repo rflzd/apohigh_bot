@@ -2,14 +2,9 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from config import DATABASE_URL  # Database URL .env-dən alınır
-import sqlite3
 
 # SQLAlchemy üçün Base təyin edilir
 Base = declarative_base()
-
-# SQLAlchemy session üçün SessionLocal obyektini təyin edirik
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
 
 # Liqa cədvəli
 class League(Base):
@@ -58,12 +53,24 @@ class Admin(Base):
     user_id = Column(Integer, unique=True, nullable=False)
     admin_status = Column(Boolean, default=True)
 
+# İstifadəçi cədvəli
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String(255), unique=True, nullable=False)
+    is_subscribed = Column(Boolean, default=False)
+    payment_receipt = Column(String(255))  # Ödəniş təsdiqi (opsional)
+
 # Verilənlər bazası bağlantısı
 def get_session():
-    return SessionLocal()
+    engine = create_engine(DATABASE_URL)
+    Session = sessionmaker(bind=engine)
+    return Session()
 
 # Verilənlər bazasında cədvəl yaratmaq
 def init_db():
+    engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
 
 # Verilənlər bazasına yeni admin əlavə etmək
@@ -146,8 +153,9 @@ def activate_subscription(user_id):
     :param user_id: İstifadəçi ID-si
     :return: Heç bir şey qaytarmır
     """
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE subscriptions SET is_active=1 WHERE user_id=?", (user_id,))
-    conn.commit()
-    conn.close()
+    session = get_session()
+    user = session.query(User).filter(User.user_id == user_id).first()
+    if user:
+        user.is_subscribed = True
+        session.commit()
+    session.close()
