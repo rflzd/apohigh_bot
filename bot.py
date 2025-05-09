@@ -1,12 +1,12 @@
+# bot.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 from services.notification_service import send_notification
 from services.subscription_service import check_subscription_status
 from handlers.ai_coupon_analysis_handler import handle_ai_coupon_analysis  # Handler faylından import
-from config import BOT_TOKEN  # Token config.py-dən alınır
 
 # /start komandasını idarə edən funksiya
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def start(update: Update, context: CallbackContext):
     """
     İstifadəçi /start komandasını göndərdikdə baş verən hadisə.
     
@@ -39,10 +39,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     
     reply_markup = InlineKeyboardMarkup(buttons)
-    await update.message.reply_text(menu_text, reply_markup=reply_markup)
+    update.message.reply_text(menu_text, reply_markup=reply_markup)
 
 # Callback query-lərini idarə edən funksiya
-async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def handle_callback(update: Update, context: CallbackContext):
     """
     İstifadəçidən gələn callback məlumatlarını idarə edir.
     
@@ -54,40 +54,42 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
 
     if query.data == 'live_games':
-        await send_notification(user_id, "📺 Canlı oyunlar siyahısı:")
+        send_notification(user_id, "📺 Canlı oyunlar siyahısı:")
         live_games = "Canlı oyunların siyahısı burada göstəriləcək."
-        await send_notification(user_id, live_games)
+        send_notification(user_id, live_games)
     elif query.data == 'today_games':
-        await send_notification(user_id, "📅 Bugünkü oyunlar:")
+        send_notification(user_id, "📅 Bugünkü oyunlar:")
         today_games = "Bugünkü oyunların siyahısı burada göstəriləcək."
-        await send_notification(user_id, today_games)
+        send_notification(user_id, today_games)
     elif query.data == 'search_team':
-        await send_notification(user_id, "🔍 Komanda Axtar: Komanda adını yazın.")
+        send_notification(user_id, "🔍 Komanda Axtar: Komanda adını yazın.")
     elif query.data == 'favorites':
-        await send_notification(user_id, "📝 Sevimlilərim:")
+        send_notification(user_id, "📝 Sevimlilərim:")
     elif query.data == 'ai_analysis':
         # AI analizi üçün handler-i çağırırıq
-        await handle_ai_coupon_analysis(update, context)
+        handle_ai_coupon_analysis(update, context)
     elif query.data == 'coupon_analysis':
         # Kupon analizi üçün handler-i çağırırıq
-        await handle_ai_coupon_analysis(update, context)
+        handle_ai_coupon_analysis(update, context)
     elif query.data == 'subscribe':
-        await send_notification(user_id, "✅ Abunəliyiniz aktivləşdirildi!")
+        send_notification(user_id, "✅ Abunəliyiniz aktivləşdirildi!")
     elif query.data == 'settings':
-        await send_notification(user_id, "⚙️ Ayarlar: Burada parametrlərinizi dəyişə bilərsiniz.")
+        send_notification(user_id, "⚙️ Ayarlar: Burada parametrlərinizi dəyişə bilərsiniz.")
 
 # Botu başladan funksiya
 def main():
     """
     Telegram botunu başladan əsas funksiya.
     """
-    application = Application.builder().token(BOT_TOKEN).build()  # Token config.py-dən alınır
+    updater = Updater(token="YOUR_BOT_API_KEY", use_context=True)
+    dispatcher = updater.dispatcher
 
     # Əsas handlerləri əlavə edirik
-    application.add_handler(CommandHandler('start', start))  # /start komandasını idarə edir
-    application.add_handler(CallbackQueryHandler(handle_callback))  # Callback query-ləri idarə edir
+    dispatcher.add_handler(CommandHandler('start', start))  # /start komandasını idarə edir
+    dispatcher.add_handler(CallbackQueryHandler(handle_callback))  # Callback query-ləri idarə edir
 
-    application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
     main()
