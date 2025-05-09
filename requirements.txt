@@ -7,15 +7,6 @@ requests==2.26.0
 # Fuzzy təhlil üçün
 scikit-fuzzy==0.4.0
 
-# Elmi hesablama və alqoritmlər üçün
-numpy==1.21.2
-scipy==1.7.3
-
-# SQLAlchemy ORM və MySQL bağlantısı üçün
-sqlalchemy==1.4.31
-psycopg2-binary==2.9.3
-mysql-connector-python==8.0.27  # MySQL ilə əlaqə üçün
-
 # Asinxron HTTP sorğuları göndərmək üçün
 aiohttp==3.8.1  # Asinxron HTTP sorğuları üçün
 
@@ -25,11 +16,36 @@ pytz==2021.1
 # Zaman zonalarını tapmaq üçün
 timezonefinder==4.4.0
 
+# Elmi hesablama və alqoritmlər üçün
+numpy==1.21.2
+scipy==1.7.3
+pandas==1.3.3  # Verilənlər analitikası üçün
+
+# SQLAlchemy ORM və MySQL bağlantısı üçün
+sqlalchemy==1.4.31
+psycopg2-binary==2.9.3
+mysql-connector-python==8.0.27  # MySQL ilə əlaqə üçün
+PyMySQL==1.0.2  # Alternativ MySQL bağlantısı üçün
+
+# Asinxron HTTP sorğuları göndərmək üçün
+aiohttp==3.8.1  # Asinxron HTTP sorğuları üçün
+
 # Cron tapşırıqları və zaman cədvəli üçün
 apscheduler==3.8.1
 
 # .env faylından mühit dəyişənlərini oxumaq üçün
 python-dotenv==0.19.2
+
+# Kod keyfiyyəti və formatlaşdırma üçün
+black==22.3.0
+flake8==5.0.4
+
+# Loglama üçün
+loguru==0.6.0
+
+# Testlər üçün
+pytest==7.1.2
+pytest-asyncio==0.18.3
 
 # Geri çağırmalar üçün
 apscheduler==3.8.1
