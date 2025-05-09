@@ -6,6 +6,10 @@ from config import DATABASE_URL  # Database URL .env-dən alınır
 # SQLAlchemy üçün Base təyin edilir
 Base = declarative_base()
 
+# Verilənlər bazası bağlantısı
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 # Liqa cədvəli
 class League(Base):
     __tablename__ = 'leagues'
@@ -62,100 +66,113 @@ class User(Base):
     is_subscribed = Column(Boolean, default=False)
     payment_receipt = Column(String(255))  # Ödəniş təsdiqi (opsional)
 
-# Verilənlər bazası bağlantısı
-def get_session():
-    engine = create_engine(DATABASE_URL)
-    Session = sessionmaker(bind=engine)
-    return Session()
-
 # Verilənlər bazasında cədvəl yaratmaq
 def init_db():
-    engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
 
+# Sessiya əldə etmək üçün kontekst meneceri
+def get_session():
+    """
+    Sessiya əldə etmək üçün kontekst meneceri.
+    """
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
 # Verilənlər bazasına yeni admin əlavə etmək
-def add_admin(user_id, db):
-    db_admin = Admin(user_id=user_id)
-    db.add(db_admin)
-    db.commit()
-    db.refresh(db_admin)
-    return db_admin
+def add_admin(user_id):
+    """
+    Yeni admin əlavə edir.
+    """
+    with SessionLocal() as session:
+        db_admin = Admin(user_id=user_id)
+        session.add(db_admin)
+        session.commit()
+        session.refresh(db_admin)
+        return db_admin
 
-# Liqaların, komandaların və matçların verilənlər bazasına yazılması
+# Liqaların verilənlər bazasına yazılması
 def save_leagues_to_db(leagues):
-    session = get_session()
-    for league in leagues:
-        existing_league = session.query(League).filter(League.name == league['name']).first()
-        if not existing_league:
-            new_league = League(name=league['name'], country=league['country'])
-            session.add(new_league)
-    session.commit()
-    session.close()
+    """
+    Liqaları verilənlər bazasına əlavə edir.
+    """
+    with SessionLocal() as session:
+        for league in leagues:
+            existing_league = session.query(League).filter(League.name == league['name']).first()
+            if not existing_league:
+                new_league = League(name=league['name'], country=league['country'])
+                session.add(new_league)
+        session.commit()
 
+# Komandaların verilənlər bazasına yazılması
 def save_teams_to_db(teams):
-    session = get_session()
-    for team in teams:
-        existing_team = session.query(Team).filter(Team.name == team['name']).first()
-        if not existing_team:
-            league = session.query(League).filter(League.name == team['league']).first()
-            new_team = Team(name=team['name'], country=team['country'], league_id=league.id)
-            session.add(new_team)
-    session.commit()
-    session.close()
+    """
+    Komandaları verilənlər bazasına əlavə edir.
+    """
+    with SessionLocal() as session:
+        for team in teams:
+            existing_team = session.query(Team).filter(Team.name == team['name']).first()
+            if not existing_team:
+                league = session.query(League).filter(League.name == team['league']).first()
+                new_team = Team(name=team['name'], country=team['country'], league_id=league.id)
+                session.add(new_team)
+        session.commit()
 
+# Matçların verilənlər bazasına yazılması
 def save_matches_to_db(matches):
-    session = get_session()
-    for match in matches:
-        existing_match = session.query(Match).filter(Match.team1_id == match['team1_id'], Match.team2_id == match['team2_id'], Match.date == match['date']).first()
-        if not existing_match:
-            new_match = Match(team1_id=match['team1_id'], team2_id=match['team2_id'], score=match['score'], date=match['date'], league_id=match['league_id'])
-            session.add(new_match)
-    session.commit()
-    session.close()
+    """
+    Matçları verilənlər bazasına əlavə edir.
+    """
+    with SessionLocal() as session:
+        for match in matches:
+            existing_match = session.query(Match).filter(
+                Match.team1_id == match['team1_id'],
+                Match.team2_id == match['team2_id'],
+                Match.date == match['date']
+            ).first()
+            if not existing_match:
+                new_match = Match(
+                    team1_id=match['team1_id'],
+                    team2_id=match['team2_id'],
+                    score=match['score'],
+                    date=match['date'],
+                    league_id=match['league_id']
+                )
+                session.add(new_match)
+        session.commit()
 
 # İstifadəçi abunəliyini yoxlamaq
 def get_subscription_status(user_id):
     """
     İstifadəçinin abunəlik statusunu gətirir.
-    
-    :param user_id: İstifadəçinin ID-si
-    :return: True - abunəlik aktivdir, False - abunəlik aktiv deyil
     """
-    session = get_session()
-    user = session.query(User).filter(User.user_id == user_id).first()  # User cədvəlində istifadəçi yoxlanır
-    session.close()
-    
-    if user:
-        return user.is_subscribed
-    return False
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.user_id == user_id).first()
+        if user:
+            return user.is_subscribed
+        return False
 
-# İstifadəçinin abunəliyini aktivləşdirmək
+# İstifadəçinin abunəliyini yeniləmək
 def update_subscription_status(user_id, is_active, payment_receipt):
     """
     İstifadəçinin abunəlik statusunu yeniləyir.
-    
-    :param user_id: İstifadəçinin ID-si
-    :param is_active: Abunəlik aktiv olduğu halda True, deaktiv olduqda False
-    :param payment_receipt: Ödənişə dair təsdiq məlumatı
     """
-    session = get_session()
-    user = session.query(User).filter(User.user_id == user_id).first()
-    if user:
-        user.is_subscribed = is_active
-        user.payment_receipt = payment_receipt
-        session.commit()
-    session.close()
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.user_id == user_id).first()
+        if user:
+            user.is_subscribed = is_active
+            user.payment_receipt = payment_receipt
+            session.commit()
 
+# İstifadəçinin abunəliyini aktivləşdirmək
 def activate_subscription(user_id):
     """
     İstifadəçinin abunəliyini aktivləşdirir.
-    
-    :param user_id: İstifadəçi ID-si
-    :return: Heç bir şey qaytarmır
     """
-    session = get_session()
-    user = session.query(User).filter(User.user_id == user_id).first()
-    if user:
-        user.is_subscribed = True
-        session.commit()
-    session.close()
+    with SessionLocal() as session:
+        user = session.query(User).filter(User.user_id == user_id).first()
+        if user:
+            user.is_subscribed = True
+            session.commit()
